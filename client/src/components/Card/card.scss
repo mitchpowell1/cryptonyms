@@ -1,0 +1,60 @@
+@import '../../variables.scss';
+
+.card {
+  background-color: transparent;
+  cursor: pointer;
+  box-shadow: 3px 5px 5px black;
+  border-radius: 10px;
+
+  transition: all linear 0.1s;
+  user-select: none;
+  perspective: 1000px;
+
+  &--flipped,
+  &--flipped:hover {
+    .card__inner {
+      transform: rotateY(180deg);
+    }
+  }
+
+  &__inner {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  &__front,
+  &__back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 10px;
+  }
+
+  &__front {
+    color: black;
+    background-color: $color-white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  &__back {
+    background-image: linear-gradient(135deg, blue, black);
+    transform: rotateY(180deg);
+  }
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 5px 15px 10px black;
+  }
+
+  &:active {
+    transform: translateY(0px);
+    box-shadow: 3px 5px 5px black;
+  }
+}
