@@ -8,9 +8,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Switch>
-        <Route path="/game/:gameId">
-          <Game />
-        </Route>
+        <Route path="/game/:gameId" component={Game}></Route>
         <Route path="/">
           <Home />
         </Route>
