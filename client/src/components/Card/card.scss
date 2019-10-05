@@ -3,7 +3,7 @@
 .card {
   background-color: transparent;
   cursor: pointer;
-  box-shadow: 3px 5px 5px black;
+  filter: drop-shadow(3px 5px 5px black);
   border-radius: 10px;
 
   transition: all linear 0.1s;
@@ -50,11 +50,11 @@
 
   &:hover {
     transform: translateY(-10px);
-    box-shadow: 5px 15px 10px black;
+    filter: drop-shadow(5px 15px 10px black);
   }
 
   &:active {
     transform: translateY(0px);
-    box-shadow: 3px 5px 5px black;
+    filter: drop-shadow(3px 5px 5px black);
   }
 }
