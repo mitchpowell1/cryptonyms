@@ -29,6 +29,12 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createGameHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	if r.Method == http.MethodOptions {
+		return
+	}
 	game := CreateGame(lexicons["Standard"])
 	response, err := json.Marshal(game.gameBoard)
 	if err != nil {
@@ -37,7 +43,6 @@ func createGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	gameManager.Add(game)
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
 
@@ -46,8 +51,10 @@ func main() {
 	gameManager = gameManager.NewGameManager()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/game", createGameHandler).Methods("POST")
+	r.HandleFunc("/game", createGameHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/game/{gameID}", getGameHandler)
+	r.Use(mux.CORSMethodMiddleware(r))
+
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         "127.0.0.1:8080",

@@ -1,0 +1,28 @@
+.home-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    color: white;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+
+.input-block {
+    display: block;
+    text-align: center;
+}
+
+.game-input {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    text-align: center;
+}
