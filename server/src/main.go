@@ -35,6 +35,7 @@ func createGameHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
+
 	game := CreateGame(lexicons["Standard"])
 	response, err := json.Marshal(game.gameBoard)
 	if err != nil {
