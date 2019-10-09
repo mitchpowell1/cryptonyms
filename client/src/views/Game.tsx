@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameBoard, Card } from '../components';
 import './game.scss';
+import { GameBoard as GB } from '../common';
 
 interface GameProps {
   match: {
@@ -10,13 +11,24 @@ interface GameProps {
   };
   gameId: string;
 }
-export class Game extends React.Component<GameProps, {}> {
+
+interface GameState {
+  cards: string[];
+}
+export class Game extends React.Component<GameProps, GameState> {
+  constructor(props: GameProps) {
+    super(props);
+    this.state = {
+      cards: []
+    };
+  }
   async componentDidMount() {
     const { gameId } = this.props.match.params;
-    console.log('Grabbing result from server');
-    const result = await fetch(`http://localhost:8080/game/${gameId}`);
-    const body = await result.text();
-    console.log('Fetch Result:', body);
+    const result = await fetch(
+      `${process.env.REACT_APP_API_URL}game/${gameId}`
+    );
+    const { wordList: cards }: GB = await result.json();
+    this.setState({ cards });
   }
 
   render() {
@@ -26,31 +38,9 @@ export class Game extends React.Component<GameProps, {}> {
           <h1 className="header__title">Cryptonyms</h1>
         </header>
         <GameBoard>
-          <Card>Buffalo</Card>
-          <Card>Cheese Grater</Card>
-          <Card>Chuck E. Cheese</Card>
-          <Card>Chicken Nuggets</Card>
-          <Card>Tooth</Card>
-          <Card>Buffalo</Card>
-          <Card>Cheese Grater</Card>
-          <Card>Chuck E. Cheese</Card>
-          <Card>Chicken Nuggets</Card>
-          <Card>Tooth</Card>
-          <Card>Buffalo</Card>
-          <Card>Cheese Grater</Card>
-          <Card>Chuck E. Cheese</Card>
-          <Card>Chicken Nuggets</Card>
-          <Card>Tooth</Card>
-          <Card>Buffalo</Card>
-          <Card>Cheese Grater</Card>
-          <Card>Chuck E. Cheese</Card>
-          <Card>Chicken Nuggets</Card>
-          <Card>Tooth</Card>
-          <Card>Buffalo</Card>
-          <Card>Cheese Grater</Card>
-          <Card>Chuck E. Cheese</Card>
-          <Card>Chicken Nuggets</Card>
-          <Card>Tooth</Card>
+          {this.state.cards.map(card => (
+            <Card key={card}>{card}</Card>
+          ))}
         </GameBoard>
         <footer className="footer"></footer>
       </div>
