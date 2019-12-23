@@ -2,12 +2,11 @@ package main
 
 import (
 	"math/rand"
-	"time"
 )
 
 type Game struct {
 	gameBoard *GameBoard
-	clients   []Client
+	clients   []*Client
 }
 
 type GameBoard struct {
@@ -37,7 +36,6 @@ func createWordList(lexicon []string) *[wordListLength]string {
 }
 
 func CreateGame(lexicon []string) *Game {
-	rand.Seed(time.Now().UnixNano())
 	id := createID()
 	wordList := createWordList(lexicon)
 	var gameBoard = &GameBoard{

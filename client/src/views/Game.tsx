@@ -18,10 +18,12 @@ interface GameState {
 export class Game extends React.Component<GameProps, GameState> {
   constructor(props: GameProps) {
     super(props);
+
     this.state = {
-      cards: []
+      cards: [],
     };
   }
+
   async componentDidMount() {
     const { gameId } = this.props.match.params;
     const result = await fetch(
@@ -29,6 +31,21 @@ export class Game extends React.Component<GameProps, GameState> {
     );
     const { wordList: cards }: GB = await result.json();
     this.setState({ cards });
+    this.establishWSConnection();
+  }
+
+  private establishWSConnection() {
+    const { gameId } = this.props.match.params;
+    const ws = new WebSocket(
+      `${process.env.REACT_APP_WS_URL}game/${gameId}/ws`
+    );
+    ws.onmessage = event => {
+      const messageText = event.data;
+      console.log('Received a websockets message');
+      console.log(messageText);
+    };
+    console.log('Established web socket connection');
+    console.log();
   }
 
   render() {

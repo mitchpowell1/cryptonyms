@@ -37,8 +37,21 @@ func createGameHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+func handleWebSocketsUpgradeRequest(w http.ResponseWriter, r *http.Request) {
+	gameID := strings.ToUpper(mux.Vars(r)["gameID"])
+	game, err := gameManager.Get(gameID)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	serveWS(game, w, r)
+}
+
 func configurationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: Fix up the access control settings
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		if r.Method == http.MethodOptions {
@@ -57,6 +70,7 @@ func main() {
 
 	r.HandleFunc("/game", createGameHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/game/{gameID}", getGameHandler).Methods(http.MethodGet)
+	r.HandleFunc("/game/{gameID}/ws", handleWebSocketsUpgradeRequest).Methods(http.MethodGet)
 
 	r.Use(mux.CORSMethodMiddleware(r), configurationMiddleware)
 	log.Fatal(http.ListenAndServe(":8080", r))
