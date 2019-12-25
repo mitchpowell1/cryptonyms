@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -35,6 +37,7 @@ func createGameHandler(w http.ResponseWriter, r *http.Request) {
 	gameManager.Add(game)
 
 	w.Write(response)
+	go game.Run()
 }
 
 func handleWebSocketsUpgradeRequest(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +66,7 @@ func configurationMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	rand.Seed(time.Now().Unix())
 	lexicons, _ = LoadLexicons("../lexicons")
 	gameManager = gameManager.NewGameManager()
 

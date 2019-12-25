@@ -44,8 +44,20 @@
   }
 
   &__back {
-    background-image: linear-gradient(135deg, blue, black);
+    background-color: beige;
     transform: rotateY(180deg);
+    &--red {
+      background-color: red;
+    }
+    &--blue {
+      background-color: blue;
+    }
+    &--neutral {
+      background-color: beige;
+    }
+    &--assassin {
+      background-color: black;
+    }
   }
 
   &:hover {

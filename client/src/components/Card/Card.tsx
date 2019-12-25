@@ -1,28 +1,36 @@
 import React, { Component } from 'react';
 import './card.scss';
+import { Color } from '../../common/gameboard';
 
-interface CardState {
-  flipped: boolean;
+interface CardProps {
+  hasBeenGuessed: boolean;
+  color: Color;
+  onClick: () => void;
 }
-export class Card extends Component<{}, CardState> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      flipped: false
-    };
+
+export class Card extends Component<CardProps, {}> {
+  private handleClick() {
+    this.props.onClick();
   }
 
-  private toggleActiveState() {
-    this.setState({ flipped: !this.state.flipped });
-  }
+  private colorClassMap = {
+    [Color.Blue]: 'blue',
+    [Color.Red]: 'red',
+    [Color.Assassin]: 'assassin',
+    [Color.Neutral]: 'neutral',
+    [Color.Unknown]: 'neutral',
+  };
 
   render() {
-    var cardClass = this.state.flipped ? 'card card--flipped' : 'card';
+    const cardClass = this.props.hasBeenGuessed ? `card card--flipped` : 'card';
+    const cardBackClass = `card__back card__back--${
+      this.colorClassMap[this.props.color]
+    }`;
     return (
       <div className={cardClass}>
-        <div className="card__inner" onClick={() => this.toggleActiveState()}>
+        <div className="card__inner" onClick={this.handleClick.bind(this)}>
           <div className="card__front">{this.props.children}</div>
-          <div className="card__back"></div>
+          <div className={cardBackClass}></div>
         </div>
       </div>
     );
