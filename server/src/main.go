@@ -87,5 +87,6 @@ func main() {
 	r.HandleFunc("/game/{gameID}/ws", handleWebSocketsUpgradeRequest).Methods(http.MethodGet)
 
 	r.Use(mux.CORSMethodMiddleware(r), configurationMiddleware)
-	log.Fatal(http.ListenAndServe(getPort(), r))
+	port := getPort()
+	log.Fatal(http.ListenAndServe(port, r))
 }
