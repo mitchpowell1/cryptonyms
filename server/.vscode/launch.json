@@ -9,7 +9,10 @@
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "/home/mitch/Development/cryptonyms/server/src/main.go"
+			"program": "/home/mitch/Development/cryptonyms/server/src/main.go",
+			"env": {
+				"PORT": "1234"
+			}
 		},
 		{
 			"name": "Launch",
