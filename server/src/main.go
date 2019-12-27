@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mitchpowell/cryptonyms/server/src/lexicons"
 )
 
-var lexicons map[string][]string
+var lexicon []string
 var gameManager *GameManager
 
 func getGameHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createGameHandler(w http.ResponseWriter, r *http.Request) {
-	game := CreateGame(lexicons["Standard"])
+	game := CreateGame(lexicon)
 	response, err := json.Marshal(game.gameBoard)
 	if err != nil {
 		println("Got an error")
@@ -67,7 +68,7 @@ func configurationMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	rand.Seed(time.Now().Unix())
-	lexicons, _ = LoadLexicons("../lexicons")
+	lexicon = lexicons.StandardLexicon
 	gameManager = gameManager.NewGameManager()
 
 	r := mux.NewRouter()
