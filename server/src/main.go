@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -66,6 +67,14 @@ func configurationMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return ":8080"
+	}
+	return ":" + port
+}
+
 func main() {
 	rand.Seed(time.Now().Unix())
 	lexicon = lexicons.StandardLexicon
@@ -78,5 +87,5 @@ func main() {
 	r.HandleFunc("/game/{gameID}/ws", handleWebSocketsUpgradeRequest).Methods(http.MethodGet)
 
 	r.Use(mux.CORSMethodMiddleware(r), configurationMiddleware)
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(getPort(), r))
 }
