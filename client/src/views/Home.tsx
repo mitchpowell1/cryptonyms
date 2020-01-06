@@ -14,7 +14,7 @@ export class Home extends React.Component<unknown, HomeState> {
     super(props);
     this.state = {
       isLoading: false,
-      gameId: ''
+      gameId: '',
     };
   }
   private async startNewGame() {
@@ -25,21 +25,17 @@ export class Home extends React.Component<unknown, HomeState> {
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         //credentials: 'same-origin', // include, *same-origin, omit
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         redirect: 'follow', // manual, *follow, error
-        referrer: 'no-referrer' // no-referrer, *client
+        referrer: 'no-referrer', // no-referrer, *client
       });
       const { id: gameId }: GameBoard = await gameResponse.json();
       this.setState({ gameId });
     } catch (error) {
       console.log('Encountered error: ', error);
     }
-  }
-
-  private joinExistingGame() {
-    console.log(`Joining an existing game: ${this.state.gameId}`);
   }
 
   private redirectToGamePage(history: History) {

@@ -3,13 +3,17 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mitchpowell/cryptonyms/server/src/lexicons"
 )
 
-var lexicons map[string][]string
+var lexicon []string
 var gameManager *GameManager
 
 func getGameHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +30,7 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createGameHandler(w http.ResponseWriter, r *http.Request) {
-	game := CreateGame(lexicons["Standard"])
+	game := CreateGame(lexicon)
 	response, err := json.Marshal(game.gameBoard)
 	if err != nil {
 		println("Got an error")
@@ -35,10 +39,24 @@ func createGameHandler(w http.ResponseWriter, r *http.Request) {
 	gameManager.Add(game)
 
 	w.Write(response)
+	go game.Run()
+}
+
+func handleWebSocketsUpgradeRequest(w http.ResponseWriter, r *http.Request) {
+	gameID := strings.ToUpper(mux.Vars(r)["gameID"])
+	game, err := gameManager.Get(gameID)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	serveWS(game, w, r)
 }
 
 func configurationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: Fix up the access control settings
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		if r.Method == http.MethodOptions {
@@ -49,15 +67,26 @@ func configurationMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return ":8080"
+	}
+	return ":" + port
+}
+
 func main() {
-	lexicons, _ = LoadLexicons("../lexicons")
+	rand.Seed(time.Now().Unix())
+	lexicon = lexicons.StandardLexicon
 	gameManager = gameManager.NewGameManager()
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/game", createGameHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/game/{gameID}", getGameHandler).Methods(http.MethodGet)
+	r.HandleFunc("/game/{gameID}/ws", handleWebSocketsUpgradeRequest).Methods(http.MethodGet)
 
 	r.Use(mux.CORSMethodMiddleware(r), configurationMiddleware)
-	log.Fatal(http.ListenAndServe(":8080", r))
+	port := getPort()
+	log.Fatal(http.ListenAndServe(port, r))
 }

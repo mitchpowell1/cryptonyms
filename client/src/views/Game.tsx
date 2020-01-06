@@ -2,8 +2,10 @@ import React from 'react';
 import { GameBoard, Card } from '../components';
 import './game.scss';
 import { GameBoard as GB } from '../common';
+import { WSConnection } from '../WSConnection';
+import { GameCard } from '../common/gameboard';
 
-interface GameProps {
+export interface GameProps {
   match: {
     params: {
       gameId: string;
@@ -13,22 +15,41 @@ interface GameProps {
 }
 
 interface GameState {
-  cards: string[];
+  cards: GameCard[];
 }
 export class Game extends React.Component<GameProps, GameState> {
+  private wsConnection: WSConnection;
+
   constructor(props: GameProps) {
     super(props);
+
+    this.wsConnection = new WSConnection(props.match.params.gameId);
+    this.wsConnection.subscribeRevealHandler((index, color) => {
+      this.state.cards[index].hasBeenGuessed = true;
+      this.state.cards[index].color = color;
+      this.setState({ cards: this.state.cards });
+    });
+
     this.state = {
-      cards: []
+      cards: [],
     };
   }
+
   async componentDidMount() {
     const { gameId } = this.props.match.params;
     const result = await fetch(
       `${process.env.REACT_APP_API_URL}game/${gameId}`
     );
-    const { wordList: cards }: GB = await result.json();
+    const { cards }: GB = await result.json();
     this.setState({ cards });
+  }
+
+  componentWillUnmount() {
+    this.wsConnection.close();
+  }
+
+  handleCardClick(cardIndex: number) {
+    this.wsConnection.sendCardFlip(cardIndex);
   }
 
   render() {
@@ -38,8 +59,15 @@ export class Game extends React.Component<GameProps, GameState> {
           <h1 className="header__title">Cryptonyms</h1>
         </header>
         <GameBoard>
-          {this.state.cards.map(card => (
-            <Card key={card}>{card}</Card>
+          {this.state.cards.map((card, index) => (
+            <Card
+              hasBeenGuessed={card.hasBeenGuessed}
+              color={card.color}
+              key={card.word}
+              onClick={() => this.handleCardClick(index)}
+            >
+              {card.word}
+            </Card>
           ))}
         </GameBoard>
         <footer className="footer"></footer>
