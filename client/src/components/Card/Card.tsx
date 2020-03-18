@@ -30,7 +30,7 @@ export class Card extends Component<CardProps, {}> {
       <div className={cardClass}>
         <div className="card__inner" onClick={this.handleClick.bind(this)}>
           <div className="card__front">{this.props.children}</div>
-          <div className={cardBackClass}></div>
+          <div className={cardBackClass}>{this.props.children}</div>
         </div>
       </div>
     );
