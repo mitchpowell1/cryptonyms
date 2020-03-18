@@ -20,17 +20,10 @@ interface GameState {
   playerIsSpymaster: boolean;
 }
 export class Game extends React.Component<GameProps, GameState> {
-  private wsConnection: WSConnection;
+  private wsConnection: WSConnection | null = null;
 
   constructor(props: GameProps) {
     super(props);
-
-    this.wsConnection = new WSConnection(props.match.params.gameId);
-    this.wsConnection.subscribeRevealHandler((index, color) => {
-      this.state.cards[index].hasBeenGuessed = true;
-      this.state.cards[index].color = color;
-      this.setState({ cards: this.state.cards });
-    });
 
     this.state = {
       cards: [],
@@ -40,11 +33,13 @@ export class Game extends React.Component<GameProps, GameState> {
   }
 
   componentWillUnmount() {
-    this.wsConnection.close();
+    if (this.wsConnection) {
+      this.wsConnection.close();
+    }
   }
 
   handleCardClick(cardIndex: number) {
-    this.wsConnection.sendCardFlip(cardIndex);
+    this.wsConnection!.sendCardFlip(cardIndex);
   }
 
   async registerPlayer(spymaster: boolean) {
@@ -68,6 +63,13 @@ export class Game extends React.Component<GameProps, GameState> {
       cards: responseBody.cards,
       playerHasRegistered: true,
       playerIsSpymaster: spymaster,
+    });
+
+    this.wsConnection = new WSConnection(responseBody.gameId);
+    this.wsConnection.subscribeRevealHandler((index, color) => {
+      this.state.cards[index].hasBeenGuessed = true;
+      this.state.cards[index].color = color;
+      this.setState({ cards: this.state.cards });
     });
   }
 
