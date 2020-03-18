@@ -16,6 +16,8 @@ export interface GameProps {
 
 interface GameState {
   cards: GameCard[];
+  playerHasRegistered: boolean;
+  playerIsSpymaster: boolean;
 }
 export class Game extends React.Component<GameProps, GameState> {
   private wsConnection: WSConnection;
@@ -32,16 +34,9 @@ export class Game extends React.Component<GameProps, GameState> {
 
     this.state = {
       cards: [],
+      playerHasRegistered: false,
+      playerIsSpymaster: false,
     };
-  }
-
-  async componentDidMount() {
-    const { gameId } = this.props.match.params;
-    const result = await fetch(
-      `${process.env.REACT_APP_API_URL}game/${gameId}`
-    );
-    const { cards }: GB = await result.json();
-    this.setState({ cards });
   }
 
   componentWillUnmount() {
@@ -52,7 +47,40 @@ export class Game extends React.Component<GameProps, GameState> {
     this.wsConnection.sendCardFlip(cardIndex);
   }
 
+  async registerPlayer(spymaster: boolean) {
+    const registerPayload = { spymaster };
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}game/${this.props.match.params.gameId}`,
+      {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        body: JSON.stringify(registerPayload),
+      }
+    );
+    const responseBody = await response.json();
+    this.setState({
+      cards: responseBody.cards,
+      playerHasRegistered: true,
+      playerIsSpymaster: spymaster,
+    });
+  }
+
   render() {
+    if (!this.state.playerHasRegistered) {
+      return (
+        <div>
+          <h1>Register as SpyMaster</h1>
+          <button onClick={() => this.registerPlayer(true)}>Yes</button>
+          <button onClick={() => this.registerPlayer(false)}>No</button>
+        </div>
+      );
+    }
     return (
       <div className="game">
         <header className="header">
@@ -61,7 +89,9 @@ export class Game extends React.Component<GameProps, GameState> {
         <GameBoard>
           {this.state.cards.map((card, index) => (
             <Card
-              hasBeenGuessed={card.hasBeenGuessed}
+              hasBeenGuessed={
+                card.hasBeenGuessed || this.state.playerIsSpymaster
+              }
               color={card.color}
               key={card.word}
               onClick={() => this.handleCardClick(index)}

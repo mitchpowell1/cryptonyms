@@ -21,15 +21,13 @@ export class Home extends React.Component<unknown, HomeState> {
     try {
       const gameResponse = await fetch(`${process.env.REACT_APP_API_URL}game`, {
         method: 'POST',
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        //credentials: 'same-origin', // include, *same-origin, omit
+        mode: 'cors',
+        cache: 'no-cache',
         headers: {
           'Content-Type': 'application/json',
-          // 'Content-Type': 'application/x-www-form-urlencoded',
         },
-        redirect: 'follow', // manual, *follow, error
-        referrer: 'no-referrer', // no-referrer, *client
+        redirect: 'follow',
+        referrer: 'no-referrer',
       });
       const { id: gameId }: GameBoard = await gameResponse.json();
       this.setState({ gameId });

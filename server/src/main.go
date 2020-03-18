@@ -16,6 +16,10 @@ import (
 var lexicon []string
 var gameManager *GameManager
 
+type PlayerRegistration struct {
+	Spymaster bool
+}
+
 func getGameHandler(w http.ResponseWriter, r *http.Request) {
 	gameID := strings.ToUpper(mux.Vars(r)["gameID"])
 	game, err := gameManager.Get(gameID)
@@ -27,6 +31,35 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(response)
 	}
 
+}
+
+func registerPlayerHandler(w http.ResponseWriter, r *http.Request) {
+	gameID := strings.ToUpper(mux.Vars(r)["gameID"])
+	game, _ := gameManager.Get(gameID)
+	var registrationPayload PlayerRegistration
+	json.NewDecoder(r.Body).Decode(&registrationPayload)
+
+	if registrationPayload.Spymaster {
+		var cards [len(game.gameBoard.Cards)]*GameCard
+		for i := 0; i < len(cards); i++ {
+			cards[i] = &GameCard{
+				Word:           game.gameBoard.Cards[i].Word,
+				Color:          game.teamAssignments[i],
+				HasBeenGuessed: game.gameBoard.Cards[i].HasBeenGuessed,
+			}
+		}
+
+		spyMasterGameboard := &GameBoard{
+			ID:    game.gameBoard.ID,
+			Cards: &cards,
+		}
+
+		response, _ := json.Marshal(spyMasterGameboard)
+		w.Write(response)
+	} else {
+		response, _ := json.Marshal(game.gameBoard)
+		w.Write(response)
+	}
 }
 
 func createGameHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,6 +117,7 @@ func main() {
 
 	r.HandleFunc("/game", createGameHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/game/{gameID}", getGameHandler).Methods(http.MethodGet)
+	r.HandleFunc("/game/{gameID}", registerPlayerHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/game/{gameID}/ws", handleWebSocketsUpgradeRequest).Methods(http.MethodGet)
 
 	r.Use(mux.CORSMethodMiddleware(r), configurationMiddleware)
