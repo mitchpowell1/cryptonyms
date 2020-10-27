@@ -1,7 +1,6 @@
 import React from 'react';
 import { GameBoard, Card } from '../components';
 import './game.scss';
-import { GameBoard as GB } from '../common';
 import { WSConnection } from '../WSConnection';
 import { GameCard } from '../common/gameboard';
 
@@ -39,11 +38,13 @@ export class Game extends React.Component<GameProps, GameState> {
   }
 
   handleCardClick(cardIndex: number) {
-    this.wsConnection!.sendCardFlip(cardIndex);
+    if (!this.state.playerIsSpymaster) {
+      this.wsConnection!.sendCardFlip(cardIndex);
+    }
   }
 
-  async registerPlayer(spymaster: boolean) {
-    const registerPayload = { spymaster };
+  async registerPlayer(isSpymaster: boolean) {
+    const registerPayload = { isSpymaster };
     const response = await fetch(
       `${process.env.REACT_APP_API_URL}game/${this.props.match.params.gameId}`,
       {
@@ -62,10 +63,10 @@ export class Game extends React.Component<GameProps, GameState> {
     this.setState({
       cards: responseBody.cards,
       playerHasRegistered: true,
-      playerIsSpymaster: spymaster,
+      playerIsSpymaster: isSpymaster,
     });
 
-    this.wsConnection = new WSConnection(responseBody.gameId);
+    this.wsConnection = new WSConnection(responseBody.id);
     this.wsConnection.subscribeRevealHandler((index, color) => {
       this.state.cards[index].hasBeenGuessed = true;
       this.state.cards[index].color = color;
@@ -74,6 +75,7 @@ export class Game extends React.Component<GameProps, GameState> {
   }
 
   render() {
+    const { cards, playerIsSpymaster } = this.state;
     if (!this.state.playerHasRegistered) {
       return (
         <div>
@@ -89,17 +91,17 @@ export class Game extends React.Component<GameProps, GameState> {
           <h1 className="header__title">Cryptonyms</h1>
         </header>
         <GameBoard>
-          {this.state.cards.map((card, index) => (
+          {cards.map((card, index) => (
             <Card
               hasBeenGuessed={
-                card.hasBeenGuessed || this.state.playerIsSpymaster
+                card.hasBeenGuessed
               }
+              spymasterMode={playerIsSpymaster}
               color={card.color}
               key={card.word}
               onClick={() => this.handleCardClick(index)}
-            >
-              {card.word}
-            </Card>
+              word={card.word}
+            />
           ))}
         </GameBoard>
         <footer className="footer"></footer>

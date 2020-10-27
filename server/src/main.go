@@ -16,8 +16,8 @@ import (
 var lexicon []string
 var gameManager *GameManager
 
-type PlayerRegistration struct {
-	Spymaster bool
+type playerRegistration struct {
+	IsSpymaster bool
 }
 
 func getGameHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,10 +36,10 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 func registerPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	gameID := strings.ToUpper(mux.Vars(r)["gameID"])
 	game, _ := gameManager.Get(gameID)
-	var registrationPayload PlayerRegistration
+	var registrationPayload playerRegistration
 	json.NewDecoder(r.Body).Decode(&registrationPayload)
 
-	if registrationPayload.Spymaster {
+	if registrationPayload.IsSpymaster {
 		var cards [len(game.gameBoard.Cards)]*GameCard
 		for i := 0; i < len(cards); i++ {
 			cards[i] = &GameCard{
